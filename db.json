@@ -1,0 +1,44 @@
+{
+  "stats": [
+    {
+      "id": "1cf5",
+      "exercise": "Skośna",
+      "details": [
+        {
+          "max": "32",
+          "date": "2024-02-22"
+        }
+      ]
+    },
+    {
+      "id": "8d1d",
+      "exercise": "Płaska",
+      "details": [
+        {
+          "max": "32",
+          "date": "2024-02-19"
+        }
+      ]
+    },
+    {
+      "id": "97f6",
+      "exercise": "martwy ciąg",
+      "details": [
+        {
+          "max": "100",
+          "date": "2024-02-19"
+        }
+      ]
+    },
+    {
+      "id": "c8cd",
+      "exercise": "Wiosłowanie",
+      "details": [
+        {
+          "max": "50",
+          "date": "2024-02-19"
+        }
+      ]
+    }
+  ]
+}
