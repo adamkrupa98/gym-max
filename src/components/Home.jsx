@@ -5,12 +5,7 @@ const Home = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-
-    if (token) {
-      setIslogged(true);
-    } else {
-      setIslogged(false);
-    }
+    setIslogged(!!token);
   }, []);
 
   return (
