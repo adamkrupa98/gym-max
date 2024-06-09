@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 const Navbar = () => {
   const [nav, setNav] = useState(true);
-  const location = useLocation(); // Pobierz aktualną ścieżkę
+  const location = useLocation();
   const [islogged, setIslogged] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const history = useHistory();
@@ -14,11 +14,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      setIslogged(false);
-    } else {
-      setIslogged(true);
-    }
+    setIslogged(!!token);
   }, [location]);
 
   useEffect(() => {
