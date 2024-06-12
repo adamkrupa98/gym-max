@@ -1,30 +1,27 @@
-import React, { useState } from "react";
 import background from "../assets/registerbackground.jpg";
-import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useHistory } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 const Register = () => {
-  const [firstname, setFirstname] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [email, setEmial] = useState("");
-  const [number, setNumber] = useState("");
-  const [password, setPassword] = useState("");
-  const [password2, setPassword2] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm();
 
   const history = useHistory();
 
-  const passwordErr = () => {
-    return toast.error("Hasła są niezgodne", { autoClose: 2000 });
-  };
-
-  const handleSubmit = (x) => {
-    x.preventDefault();
-    if (password !== password2) {
-      passwordErr();
-    } else {
-      history.push("/");
+  const onSubmit = (data) => {
+    if (data.password !== data.repeatPassword) {
+      setError("repeatPassword", {
+        type: "manual",
+        message: "Hasła się nie zgadzają",
+      });
+      return;
     }
+    history.push("/");
   };
   return (
     <form
@@ -32,19 +29,16 @@ const Register = () => {
       style={{
         backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.5)), url(${background})`,
       }}
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmit)}
     >
-      <ToastContainer />
-      <div className="flex flex-col border-2 py-5 px-10 border-slate-400 rounded-md backdrop-filter backdrop-blur-md ">
-        <h1 className="text-center font-bold text-3xl">Rejestracja</h1>
-        <div className="flex flex-col mt-6">
+      <div className="w-[25%] h-[75%] flex flex-col border-2 py-5 px-10 border-slate-400 rounded-md backdrop-filter backdrop-blur-md ">
+        <h1 className="text-center font-bold text-3xl mt-10">Rejestracja</h1>
+        <div className="flex flex-col mt-[20%]">
           <input
             type="text"
             className=" peer bg-transparent border-b-2 appearance-none focus:ring-0 focus:outline-none border-gray-300 focus:border-[#f0a04b]"
             placeholder=""
-            value={firstname}
-            onChange={(x) => setFirstname(x.target.value)}
-            required
+            {...register("firstname", { required: true })}
           />
           <label
             htmlFor=""
@@ -55,14 +49,16 @@ const Register = () => {
           >
             Imię
           </label>
+          {errors.firstname && (
+            <span className="text-red-500">To pole jest wymagane</span>
+          )}
         </div>
         <div className="flex flex-col mt-6">
           <input
             type="text"
             className=" peer bg-transparent border-b-2 appearance-none focus:ring-0 focus:outline-none border-gray-300 focus:border-[#f0a04b]"
             placeholder=""
-            value={lastname}
-            onChange={(x) => setLastname(x.target.value)}
+            {...register("lastname", { required: true })}
           />
           <label
             htmlFor=""
@@ -73,15 +69,22 @@ const Register = () => {
           >
             Nazwisko
           </label>
+          {errors.lastname && (
+            <span className="text-red-500">To pole jets wymagane</span>
+          )}
         </div>
         <div className="flex flex-col mt-6">
           <input
             type="text"
             className=" peer bg-transparent border-b-2 appearance-none focus:ring-0 focus:outline-none border-gray-300 focus:border-[#f0a04b]"
             placeholder=""
-            value={email}
-            onChange={(x) => setEmial(x.target.value)}
-            required
+            {...register("email", {
+              required: true,
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Niepoprawny format adresu email",
+              },
+            })}
           />
           <label
             htmlFor=""
@@ -92,14 +95,24 @@ const Register = () => {
           >
             Adres email
           </label>
+          {errors.email && (
+            <span className="text-red-500">
+              {errors.email.message || "To pole jest wymagane"}
+            </span>
+          )}
         </div>
         <div className="flex flex-col mt-6">
           <input
             type="text"
             className=" peer bg-transparent border-b-2 appearance-none focus:ring-0 focus:outline-none border-gray-300 focus:border-[#f0a04b]"
             placeholder=""
-            value={number}
-            onChange={(x) => setNumber(x.target.value)}
+            {...register("phone", {
+              required: true,
+              pattern: {
+                value: /^[0-9]+$/,
+                message: "Numer telefonu może zawierać tylko cyfry",
+              },
+            })}
           />
           <label
             htmlFor=""
@@ -110,14 +123,18 @@ const Register = () => {
           >
             Numer telefonu
           </label>
+          {errors.phone && (
+            <span className="text-red-500">
+              {errors.phone.message || "To pole jest wymagane"}
+            </span>
+          )}
         </div>
         <div className="flex flex-col mt-6">
           <input
             type="password"
             className=" peer bg-transparent border-b-2 appearance-none focus:ring-0 focus:outline-none border-gray-300 focus:border-[#f0a04b]"
             placeholder=""
-            value={password}
-            onChange={(x) => setPassword(x.target.value)}
+            {...register("password", { required: true })}
           />
           <label
             htmlFor=""
@@ -128,14 +145,16 @@ const Register = () => {
           >
             Hasło
           </label>
+          {errors.password && (
+            <span className="text-red-500">To pole jest wymagane</span>
+          )}
         </div>
         <div className="flex flex-col mt-6">
           <input
             type="password"
             className=" peer bg-transparent border-b-2 appearance-none focus:ring-0 focus:outline-none border-gray-300 focus:border-[#f0a04b]"
             placeholder=""
-            value={password2}
-            onChange={(x) => setPassword2(x.target.value)}
+            {...register("repeatPassword", { required: true })}
           />
           <label
             htmlFor=""
@@ -146,9 +165,14 @@ const Register = () => {
           >
             Powtórz hasło
           </label>
+          {errors.repeatPassword && (
+            <span className="text-red-500">
+              {errors.repeatPassword.message || "To pole jest wymagane!"}
+            </span>
+          )}
         </div>
         <div className="flex flex-col mt-6 border-2 rounded-lg py-1 border-[#f0a04b] font-medium">
-          <button>Zarejestruj</button>
+          <button type="submit">Zarejestruj</button>
         </div>
       </div>
     </form>
