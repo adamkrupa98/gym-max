@@ -4,6 +4,8 @@ import { IoClose } from "react-icons/io5";
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { useHistory } from "react-router-dom";
+import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+
 const Navbar = () => {
   const [nav, setNav] = useState(true);
   const location = useLocation();
@@ -13,8 +15,11 @@ const Navbar = () => {
   const settingsRef = useRef(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIslogged(!!token);
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIslogged(!!user);
+    });
+    return () => unsubscribe();
   }, [location]);
 
   useEffect(() => {
@@ -38,14 +43,21 @@ const Navbar = () => {
     setShowSettings(!showSettings);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    history.push("/");
-    window.location.reload();
+  const handleLogout = async () => {
+    try {
+      const auth = getAuth();
+      await signOut(auth);
+
+      location.window.reload();
+    } catch (error) {
+      console.error("Błąd podczas wylogowywania: ", error);
+    }
   };
 
   const isLoginPage =
-    location.pathname === "/login" || location.pathname === "/register";
+    location.pathname === "/login" ||
+    location.pathname === "/register" ||
+    location.pathname === "/forgotpassword";
 
   return (
     <nav className="text-[#f0a04b] flex max-w-[1240px] mx-auto px-4 items-center h-24 justify-between">

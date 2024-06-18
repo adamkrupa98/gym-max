@@ -1,13 +1,26 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 const Home = () => {
   const [islogged, setIslogged] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIslogged(!!token);
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIslogged(!!user);
+      setLoading(false);
+    });
+    return () => unsubscribe();
   }, []);
 
+  if (loading) {
+    return (
+      <div className=" mt-[-163px] w-full h-screen flex items-center justify-center ">
+        <p className="text-2xl text-[#f0a04b]">Ładowanie...</p>
+      </div>
+    );
+  }
   return (
     <>
       {!islogged && (

@@ -2,7 +2,9 @@ import background from "../assets/registerbackground.jpg";
 import "react-toastify/dist/ReactToastify.css";
 import { useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
-
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { db } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
 const Register = () => {
   const {
     register,
@@ -12,8 +14,8 @@ const Register = () => {
   } = useForm();
 
   const history = useHistory();
-
-  const onSubmit = (data) => {
+  const auth = getAuth();
+  const onSubmit = async (data) => {
     if (data.password !== data.repeatPassword) {
       setError("repeatPassword", {
         type: "manual",
@@ -21,7 +23,27 @@ const Register = () => {
       });
       return;
     }
-    history.push("/");
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password
+      );
+
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid), {
+        firstname: data.firstname,
+        lastname: data.lastname,
+        email: data.email,
+        phone: data.phone,
+      });
+
+      history.push("/");
+    } catch (error) {
+      console.log("Blad poczas rejestracji uzytkownika", error);
+    }
   };
   return (
     <form
@@ -31,7 +53,7 @@ const Register = () => {
       }}
       onSubmit={handleSubmit(onSubmit)}
     >
-      <div className="w-[25%] h-[75%] flex flex-col border-2 py-5 px-10 border-slate-400 rounded-md backdrop-filter backdrop-blur-md ">
+      <div className="w-[25%] flex flex-col border-2 py-5 px-10 border-slate-400 rounded-md backdrop-filter backdrop-blur-md ">
         <h1 className="text-center font-bold text-3xl mt-10">Rejestracja</h1>
         <div className="flex flex-col mt-[20%]">
           <input
@@ -145,9 +167,10 @@ const Register = () => {
           >
             Hasło
           </label>
-          {errors.password && (
-            <span className="text-red-500">To pole jest wymagane</span>
-          )}
+          {errors.password &&
+            !errors.password.message(
+              <span className="text-red-500">To pole jest wymagane</span>
+            )}
         </div>
         <div className="flex flex-col mt-6">
           <input
