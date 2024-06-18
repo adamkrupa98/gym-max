@@ -1,32 +1,39 @@
 import React, { useState } from "react";
-import background from "../assets/background.jpg";
+import background from "../assets/registerbackground.jpg";
 import { Link } from "react-router-dom";
 import { useHistory } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-
+import { useForm } from "react-hook-form";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const history = useHistory();
-  const notify = () =>
-    toast.error("Błędne dane logowania", { autoClose: 2000 });
 
-  const handleSubmit = (x) => {
-    x.preventDefault();
-    if (email === "test@test.pl" && password === "test123") {
-      localStorage.setItem("token", "12444321");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+    reset,
+    clearErrors,
+  } = useForm();
+
+  const onSubmit = async (data) => {
+    try {
+      const auth = getAuth();
+      await signInWithEmailAndPassword(auth, data.email, data.password);
       history.push("/");
-    } else {
-      notify();
+    } catch (error) {
+      console.error("Błąd logowania ", error);
+      setError("password", {
+        type: "manual",
+        message: "Nieprawidłowy email lub hasło",
+      });
     }
   };
 
   return (
     <>
-      <ToastContainer />
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         className=" w-full h-screen mt-[-96px] flex flex-col mx-auto justify-center items-center bg-cover text-white"
         style={{
           backgroundImage: `url(${background})`,
@@ -39,10 +46,9 @@ const Login = () => {
           <div className="mt-7 flex flex-col">
             <input
               type="email"
-              value={email}
-              onChange={(x) => setEmail(x.target.value)}
               className="peer bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:border-[#f0a04b] focus:outline-none focus:ring-0"
               placeholder=""
+              {...register("email", { required: true })}
             />
             <label
               htmlFor=""
@@ -52,14 +58,16 @@ const Login = () => {
             >
               Email
             </label>
+            {errors.email && (
+              <span className="text-red-500">To pole jest wymagane</span>
+            )}
           </div>
           <div className="mt-7 flex flex-col">
             <input
               type="password"
-              value={password}
-              onChange={(x) => setPassword(x.target.value)}
               className="peer bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:border-[#f0a04b] focus:outline-none focus:ring-0"
               placeholder=""
+              {...register("password", { required: true })}
             />
             <label
               htmlFor=""
@@ -69,11 +77,17 @@ const Login = () => {
             >
               Hasło
             </label>
+            {errors.password && !errors.password.message && (
+              <span className="text-red-500">To pole jest wymagane</span>
+            )}
           </div>
           <div className="flex mt-5">
             <input type="checkbox" className="mr-2" />
             <label htmlFor="">Zapamiętaj</label>
-            <Link className="ml-10 underline underline-offset-2 text-blue-400 text-sm">
+            <Link
+              to="/forgotpassword"
+              className="ml-10 underline underline-offset-2 text-blue-400 text-sm"
+            >
               Zapomniałeś hasła?
             </Link>
           </div>
@@ -90,6 +104,11 @@ const Login = () => {
                 Zarejestruj się!
               </Link>
             </div>
+            {errors.password && (
+              <span className="text-red-500 mt-5">
+                Nieprawidłowy email lub hasło
+              </span>
+            )}
           </div>
         </div>
       </form>

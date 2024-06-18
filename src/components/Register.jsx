@@ -167,9 +167,10 @@ const Register = () => {
           >
             Hasło
           </label>
-          {errors.password && (
-            <span className="text-red-500">To pole jest wymagane</span>
-          )}
+          {errors.password &&
+            !errors.password.message(
+              <span className="text-red-500">To pole jest wymagane</span>
+            )}
         </div>
         <div className="flex flex-col mt-6">
           <input

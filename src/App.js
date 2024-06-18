@@ -8,6 +8,8 @@ import AddResult from "./components/AddResult";
 import Footer from "./components/Footer";
 import Login from "./components/Login";
 import Register from "./components/Register";
+import ForgotPassword from "./components/ForgotPassword";
+import Account from "./components/Account";
 function App() {
   return (
     <Router>
@@ -35,6 +37,12 @@ function App() {
             </Route>
             <Route exact path="/register">
               <Register />
+            </Route>
+            <Route exact path="/forgotpassword">
+              <ForgotPassword />
+            </Route>
+            <Route exact path="/settings">
+              <Account />
             </Route>
           </Switch>
           <Footer />
