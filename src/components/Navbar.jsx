@@ -57,7 +57,7 @@ const Navbar = () => {
       const auth = getAuth();
       await signOut(auth);
 
-      location.window.reload();
+      history.push("/");
     } catch (error) {
       console.error("Błąd podczas wylogowywania: ", error);
     }
