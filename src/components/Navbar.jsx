@@ -39,16 +39,25 @@ const Navbar = () => {
     }
   };
 
-  const handleSettings = () => {
+  const handleToogleSettings = () => {
     setShowSettings(!showSettings);
   };
 
+  const handleNavigateToSettings = () => {
+    setShowSettings(!showSettings);
+    history.push("/settings");
+  };
+
+  const handleNavigationToLogin = () => {
+    setShowSettings(!showSettings);
+    history.push("/login");
+  };
   const handleLogout = async () => {
     try {
       const auth = getAuth();
       await signOut(auth);
 
-      location.window.reload();
+      history.push("/");
     } catch (error) {
       console.error("Błąd podczas wylogowywania: ", error);
     }
@@ -75,7 +84,7 @@ const Navbar = () => {
                   <Link to="/exercises">Rekordy</Link>
                 </li>
                 <li className="p-4">
-                  <button onClick={handleSettings}>Moje konto</button>
+                  <button onClick={handleToogleSettings}>Moje konto</button>
                 </li>
                 {showSettings && (
                   <div
@@ -84,7 +93,9 @@ const Navbar = () => {
                   >
                     <ul className="flex px-3 justify-center w-full flex-col text-center">
                       <li className="p-1">
-                        <Link to="/settings">Ustawienia</Link>
+                        <button onClick={handleNavigateToSettings}>
+                          Ustawienia
+                        </button>
                       </li>
                       <li className="p-1">
                         <button onClick={handleLogout}>Wyloguj się</button>
@@ -98,7 +109,7 @@ const Navbar = () => {
           {!islogged && (
             <ul className="md:text-2xl hidden md:flex justify-between">
               <li className="p-4">
-                <Link to="/login">Zaloguj się</Link>
+                <button onClick={handleNavigationToLogin}>Zaloguj się</button>
               </li>
             </ul>
           )}
