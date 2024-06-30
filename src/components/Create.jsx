@@ -1,62 +1,67 @@
-import { useState } from "react";
 import { useHistory } from "react-router-dom";
-import BackButton from "./BackButton";
-const Create = () => {
-  const [exercise, setExercise] = useState("");
-  const [max, setMax] = useState("");
-  const history = useHistory();
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const currentDate = new Date().toISOString().split("T")[0];
+import { useForm } from "react-hook-form";
+import { getAuth } from "firebase/auth";
+import { db } from "../firebase";
+import { doc, setDoc } from "firebase/firestore";
 
-    const stats = {
-      exercise,
-      details: [
-        {
-          max,
-          date: currentDate,
-        },
-      ],
-    };
-    fetch("http://localhost:8001/stats", {
-      method: "POST",
-      headers: { "Content-Type": "application-json" },
-      body: JSON.stringify(stats),
-    }).then(() => {
-      history.goBack();
+const Create = () => {
+  const {
+    handleSubmit,
+    register,
+    formState: { errors },
+  } = useForm();
+
+  const history = useHistory();
+  const auth = getAuth();
+  const onSubmit = async (data) => {
+    await setDoc(doc(db, "records", auth.currentUser.uid), {
+      exercise: data.name,
+      score: data.score,
     });
+
+    history.push("/exercises");
   };
+
   return (
     <>
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-[1240px] h-screen mt-[-163px] flex flex-col justify-center items-center mx-auto"
       >
-        <label className="font-medium md:text-4xl text-2xl">
-          Nazwa ćwiczenia:{" "}
-        </label>
-        <input
-          type="text"
-          value={exercise}
-          onChange={(e) => setExercise(e.target.value)}
-          className="mt-5 border-2 border-slate-400 p-1 text-center"
-        />
-        <label className="font-medium md:text-4xl text-2xl mt-10">
-          Aktualny rekord (kg):
-        </label>
-        <input
-          type="number"
-          value={max}
-          onChange={(e) => {
-            setMax(e.target.value);
-          }}
-          className="mt-5 border-2 border-slate-400  p-1 text-center"
-        />
-        <button className="mt-10 w-[200px] border-2 py-1 rounded-full border-[#a87238] bg-[#f0a04b] text-white font-medium">
-          Zapisz
-        </button>
+        <div className="max-w-[1200px] w-full p-3">
+          <div className="flex">
+            <label className="font-medium md:text-2xl text-2x w-1/5">
+              Nazwa ćwiczenia:{" "}
+            </label>
+            <input
+              type="text"
+              className=" border-2 border-slate-400 p-1 "
+              {...register("name", { required: true })}
+            />
+            {errors.name && (
+              <span className="text-red-500">To pole jest wymagane</span>
+            )}
+          </div>
+          <div className="flex mt-5">
+            <label className="font-medium md:text-2xl text-2xl w-1/5">
+              Wynik (kg):
+            </label>
+            <input
+              type="number"
+              className="border-2 border-slate-400  p-1"
+              {...register("score", { required: true })}
+            />
+            {errors.score && (
+              <span className="text-red-500">To pole jest wymagane</span>
+            )}
+          </div>
+          <div>
+            <button className="text-white bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-orange-300 dark:focus:ring-orange-800 shadow-lg shadow-orange-500/50 dark:shadow-lg dark:shadow-orange-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mt-10 w-[100px]">
+              Zapisz
+            </button>
+          </div>
+        </div>
       </form>
-      <BackButton />
     </>
   );
 };
