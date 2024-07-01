@@ -1,24 +1,63 @@
 import { Link } from "react-router-dom";
-import useFetch from "../hooks/useFetch";
+import { useEffect, useState } from "react";
 import ExcerciseBox from "./ExcerciseBox";
-import useGetStats from "../hooks/useGetStats";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { db } from "../firebase";
+import { collection, query, getDocs } from "firebase/firestore";
+
 const Exercises = () => {
-  const {
-    data: stats,
-    loading,
-    error,
-  } = useFetch("http://localhost:8001/stats");
+  const [exercises, setExercises] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const auth = getAuth();
 
-  const { maxRecordsByExercise } = useGetStats(stats);
+  useEffect(() => {
+    const fetchExercises = async (userId) => {
+      try {
+        const q = query(collection(db, "users", userId, "exercises"));
+        const querySnapshot = await getDocs(q);
+        const exercisesData = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            timestamp: data.timestamp.toDate(), // Konwersja Timestamp do Date
+          };
+        });
+        setExercises(exercisesData);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const containerClass = stats.length <= 3 ? "h-screen" : "h-auto";
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchExercises(user.uid);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth]);
+
+  if (loading) {
+    return (
+      <div className="flex w-full h-screen mt-[-163px] justify-center items-center flex-col">
+        <p className="text-2xl text-[#f0a04b]"> Loading...</p>
+      </div>
+    );
+  }
+
+  const containerClass = exercises.length <= 3 ? "h-screen" : "h-auto";
 
   return (
     <div
       className={`max-w-[1240px] w-full flex flex-col items-center ${containerClass} mt-[-163px] mx-auto`}
     >
       <h1 className="mt-[170px] font-bold text-3xl md:text-4xl lg:text-5xl">
-        Zapisane ćwiczenia: {stats.length > 0 ? stats.length : ""}
+        Zapisane ćwiczenia: {exercises.length > 0 ? exercises.length : ""}
       </h1>
       <Link
         id="add_new"
@@ -28,23 +67,19 @@ const Exercises = () => {
         + Dodaj nowe
       </Link>
 
-      {loading && <div>Loading...</div>}
-      {error && <div>Error...("{error.message}")</div>}
-      {maxRecordsByExercise && (
-        <div
-          className={`grid md:grid-cols-3 w-full max-w-[1240px] h-auto text-center mt-14 pb-10 items-center`}
-        >
-          {maxRecordsByExercise.map((x, index) => (
-            <ExcerciseBox
-              key={index}
-              exerciseId={x.id}
-              max={x.details[0].max}
-              date={x.details[0].date}
-              exercise={x.exercise}
-            />
-          ))}
-        </div>
-      )}
+      <div
+        className={`grid md:grid-cols-3 w-full max-w-[1240px] h-auto text-center mt-14 pb-10 items-center`}
+      >
+        {exercises.map((x, index) => (
+          <ExcerciseBox
+            key={index}
+            exerciseId={x.id}
+            max={x.score}
+            date={x.timestamp}
+            exercise={x.exercise}
+          />
+        ))}
+      </div>
     </div>
   );
 };

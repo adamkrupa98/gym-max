@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 
 const ExcerciseBox = ({ exercise, max = 0, date = "-", exerciseId }) => {
+  const formattedDate = date.toLocaleDateString();
   return (
     <div className="bg-white p-4 h-full w-full flex items-center md:flex-col mt-5">
       <Link
@@ -12,7 +13,9 @@ const ExcerciseBox = ({ exercise, max = 0, date = "-", exerciseId }) => {
         </h1>
         <div className="grid w-[200px] md:w-full items-center">
           <p className="text-xl md:text-2xl font-medium">Waga: {max}kg</p>
-          <p className="text-xl md:text-2xl font-medium mt-14">{date}</p>
+          <p className="text-xl md:text-2xl font-medium mt-14">
+            {formattedDate}
+          </p>
         </div>
       </Link>
     </div>

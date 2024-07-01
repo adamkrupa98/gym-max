@@ -2,7 +2,7 @@ import { useHistory } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { getAuth } from "firebase/auth";
 import { db } from "../firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { collection, addDoc } from "firebase/firestore";
 
 const Create = () => {
   const {
@@ -13,13 +13,24 @@ const Create = () => {
 
   const history = useHistory();
   const auth = getAuth();
-  const onSubmit = async (data) => {
-    await setDoc(doc(db, "records", auth.currentUser.uid), {
-      exercise: data.name,
-      score: data.score,
-    });
 
-    history.push("/exercises");
+  const onSubmit = async (data) => {
+    const user = auth.currentUser;
+    if (user) {
+      const exercisesCollection = collection(
+        db,
+        "users",
+        user.uid,
+        "exercises"
+      );
+
+      await addDoc(exercisesCollection, {
+        exercise: data.name,
+        score: data.score,
+        timestamp: new Date(),
+      });
+      history.push("/exercises");
+    }
   };
 
   return (
