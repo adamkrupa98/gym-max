@@ -46,7 +46,7 @@ const Create = () => {
             </label>
             <input
               type="text"
-              className=" border-2 border-slate-400 p-1 "
+              className=" border-2 border-slate-400 p-1 bored rounded-md"
               {...register("name", { required: true })}
             />
             {errors.name && (
@@ -55,11 +55,11 @@ const Create = () => {
           </div>
           <div className="flex mt-5">
             <label className="font-medium md:text-2xl text-2xl w-1/5">
-              Wynik (kg):
+              Twój max (kg):
             </label>
             <input
               type="number"
-              className="border-2 border-slate-400  p-1"
+              className="border-2 border-slate-400  p-1 rounded-md"
               {...register("score", { required: true })}
             />
             {errors.score && (
