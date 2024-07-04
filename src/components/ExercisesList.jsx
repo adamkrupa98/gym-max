@@ -44,41 +44,45 @@ const Exercises = () => {
 
   if (loading) {
     return (
-      <div className="flex w-full h-screen mt-[-163px] justify-center items-center flex-col">
-        <p className="text-2xl text-[#f0a04b]"> Loading...</p>
+      <div className="flex w-full min-h-screen justify-center items-center flex-col">
+        <p className="text-2xl text-[#f0a04b]">Loading...</p>
       </div>
     );
   }
 
-  const containerClass = exercises.length <= 3 ? "h-screen" : "h-auto";
-
   return (
-    <div
-      className={`max-w-[1240px] w-full flex flex-col items-center ${containerClass} mt-[-163px] mx-auto`}
-    >
-      <h1 className="mt-[170px] font-bold text-3xl md:text-4xl lg:text-5xl">
+    <div className="max-w-[1240px] w-full flex flex-col min-h-screen h-auto mx-auto">
+      <h1 className="md:mt-16 p-3 font-bold text-xl md:text-xl lg:text-xl">
         Zapisane ćwiczenia: {exercises.length > 0 ? exercises.length : ""}
       </h1>
-      <Link
-        id="add_new"
-        to="/create"
-        className="mt-10 bg-white border-[#f0a04b] border-2 rounded-md p-2 font-medium text-[#f0a04b] w-40 text-center hover:text-white hover:bg-[#f0a04b]"
-      >
-        + Dodaj nowe
-      </Link>
-
-      <div
-        className={`grid md:grid-cols-3 w-full max-w-[1240px] h-auto text-center mt-14 pb-10 items-center`}
-      >
-        {exercises.map((x, index) => (
-          <ExcerciseBox
-            key={index}
-            exerciseId={x.id}
-            max={x.score}
-            date={x.timestamp}
-            exercise={x.exercise}
-          />
-        ))}
+      <div className="flex w-full mt-3 p-3 items-center">
+        <input
+          type="text"
+          id="first_name"
+          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block md:w-[15%] p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 h-10"
+          placeholder="Szukaj..."
+          required
+        />
+        <Link
+          id="add_new"
+          to="/create"
+          className="bg-white border-[#f0a04b] border-2 rounded-md p-2 font-medium text-[#f0a04b] w-40 text-center hover:text-white hover:bg-[#f0a04b] ml-5"
+        >
+          + Dodaj nowe
+        </Link>
+      </div>
+      <div>
+        <ul className="flex flex-col w-full max-w-[1240px] mt-5 pb-10 p-3">
+          {exercises.map((x, index) => (
+            <ExcerciseBox
+              key={index}
+              exerciseId={x.id}
+              max={x.score}
+              date={x.timestamp}
+              exercise={x.exercise}
+            />
+          ))}
+        </ul>
       </div>
     </div>
   );

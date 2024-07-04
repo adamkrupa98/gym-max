@@ -81,7 +81,7 @@ const Navbar = () => {
             <>
               <ul className="md:text-2xl hidden md:flex justify-between">
                 <li className="p-4">
-                  <Link to="/exercises">Rekordy</Link>
+                  <Link to="/exercises">Ćwiczenia</Link>
                 </li>
                 <li className="p-4">
                   <button onClick={handleToogleSettings}>Moje konto</button>
@@ -135,7 +135,7 @@ const Navbar = () => {
           <ul className="md:text-2xl md:flex justify-between">
             <li className="p-4">
               <Link to="/exercises" onClick={handleClick}>
-                Rekordy
+                Ćwiczenia
               </Link>
             </li>
             <li className="p-4">
