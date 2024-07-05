@@ -69,7 +69,7 @@ const Navbar = () => {
     location.pathname === "/forgotpassword";
 
   return (
-    <nav className="text-[#f0a04b] flex max-w-[1240px] mx-auto px-4 items-center h-24 justify-between">
+    <nav className="text-[#f0a04b] flex max-w-[1240px] mx-auto px-4 items-center h-24 justify-between relative z-20">
       <Link to="/">
         <h1 className="text-[#f0a04b] text-3xl md:text-4xl font-bold">
           GymMax
@@ -83,26 +83,26 @@ const Navbar = () => {
                 <li className="p-4">
                   <Link to="/exercises">Ćwiczenia</Link>
                 </li>
-                <li className="p-4">
+                <li className="p-4 relative">
                   <button onClick={handleToogleSettings}>Moje konto</button>
+                  {showSettings && (
+                    <div
+                      ref={settingsRef}
+                      className="absolute top-full right-0 p-2 text-sm w-auto border-2 border-gray-600 rounded-md text-black bg-white z-30"
+                    >
+                      <ul className="flex px-3 justify-center w-full flex-col text-center">
+                        <li className="p-1">
+                          <button onClick={handleNavigateToSettings}>
+                            Ustawienia
+                          </button>
+                        </li>
+                        <li className="p-1">
+                          <button onClick={handleLogout}>Wyloguj się</button>
+                        </li>
+                      </ul>
+                    </div>
+                  )}
                 </li>
-                {showSettings && (
-                  <div
-                    ref={settingsRef}
-                    className="absolute top-20 p-2 translate-x-[140px] text-sm w-auto border-2 border-gray-600 rounded-md text-black"
-                  >
-                    <ul className="flex px-3 justify-center w-full flex-col text-center">
-                      <li className="p-1">
-                        <button onClick={handleNavigateToSettings}>
-                          Ustawienia
-                        </button>
-                      </li>
-                      <li className="p-1">
-                        <button onClick={handleLogout}>Wyloguj się</button>
-                      </li>
-                    </ul>
-                  </div>
-                )}
               </ul>
             </>
           )}
@@ -123,8 +123,8 @@ const Navbar = () => {
       <div
         className={
           !nav
-            ? "fixed top-0 left-0 bg-[#e18f36] w-[70%] h-full ease-in-out duration-300 text-white"
-            : "fixed left-[-100%]"
+            ? "fixed top-0 left-0 bg-[#e18f36] w-[70%] h-full ease-in-out duration-300 text-white z-20"
+            : "fixed left-[-100%] z-20"
         }
         onClick={handleClickOutside}
       >
