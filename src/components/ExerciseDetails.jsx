@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
+import ExerciseResults from "./ExerciseResults";
+import Max from "./Max";
 
 const ExerciseDetails = () => {
   const { id } = useParams();
@@ -43,7 +45,6 @@ const ExerciseDetails = () => {
     return () => unsubscribe();
   }, [auth, id]);
 
-  console.log(exercise);
   if (loading) {
     return (
       <div className="flex w-full min-h-screen justify-center items-center flex-col">
@@ -52,10 +53,15 @@ const ExerciseDetails = () => {
     );
   }
   return (
-    <div className="flex flex-col max-w-[1240px] mx-auto h-screen mt-[-433px]">
-      <div className="mt-[423px] flex w-full items-center justify-center pl-5">
-        <h1 className="text-2xl font-medium">{exercise.exercise}</h1>
-        <ul className="flex flex-col w-full max-w-[1240px] mt-5 pb-10 p-3"></ul>
+    <div className="flex flex-col max-w-[1240px] mx-auto h-screen mt-[-37%] md:mt-[-163px] items-center">
+      <div className="mt-[155px] md:mt-[15%] flex flex-col w-full justify-center md:grid md:grid-cols-2">
+        <div className="flex flex-col h-auto mt-5 w-full">
+          <ExerciseResults data={exercise} />
+        </div>
+        <div className="flex h-auto w-full">
+          <Max data={exercise} />
+        </div>
+        <div className="flex w-full"></div>
       </div>
     </div>
   );
