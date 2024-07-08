@@ -1,26 +1,276 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  arrayUnion,
+  Timestamp,
+} from "firebase/firestore";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { db } from "../firebase"; // Upewnij się, że poprawnie importujesz swoje instancje Firebase
+import ReactDOM from "react-dom";
 
-const ExerciseResults = ({ data }) => {
-  return (
-    <div className="w-full flex flex-col text-white border border-slate-300 rounded-lg p-4 mt-2 bg-slate-900 bg-opacity-60 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 md:mt-0 h-[40vh] md:h-[50vh]">
-      <h1 className="text-2xl font-medium pl-3">{data.exercise}</h1>
+const ExerciseResults = ({ id }) => {
+  const [exercise, setExercise] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState(null);
+  const [formData, setFormData] = useState({ sets: [] });
+  const auth = getAuth();
 
-      {Object.entries(data).map(([key, exercise]) => (
-        <div
-          key={key}
-          className="flex items-center justify-between border border-slate-300 rounded-lg p-4 mt-2 bg-slate-800 bg-opacity-60 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10"
+  useEffect(() => {
+    const fetchExercises = async (userId) => {
+      try {
+        const exerciseDoc = doc(db, "users", userId, "exercises", id);
+        const exerciseSnapshot = await getDoc(exerciseDoc);
+        if (exerciseSnapshot.exists()) {
+          const data = exerciseSnapshot.data();
+          setExercise({
+            id: exerciseSnapshot.id,
+            ...data,
+            timestamp: data.timestamp.toDate(), // Konwersja Timestamp do Date
+          });
+        } else {
+          console.error("No such document!");
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchExercises(user.uid);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth, id]);
+
+  const handleAddEntry = async () => {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const exerciseDoc = doc(db, "users", user.uid, "exercises", id);
+        const newEntry = {
+          date: Timestamp.now(),
+          sets: [],
+        };
+        await updateDoc(exerciseDoc, {
+          entries: arrayUnion(newEntry),
+        });
+        // Odśwież dane ćwiczenia
+        const exerciseSnapshot = await getDoc(exerciseDoc);
+        if (exerciseSnapshot.exists()) {
+          const data = exerciseSnapshot.data();
+          setExercise({
+            id: exerciseSnapshot.id,
+            ...data,
+            timestamp: data.timestamp.toDate(), // Konwersja Timestamp do Date
+          });
+        }
+      } else {
+        console.error("No user logged in!");
+      }
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
+  };
+
+  const handleEditEntry = (entry) => {
+    setSelectedEntry(entry);
+    setFormData(entry);
+    setIsModalOpen(true);
+  };
+
+  const handleChange = (index, event) => {
+    const values = [...formData.sets];
+    values[index][event.target.name] = event.target.value;
+    setFormData({ ...formData, sets: values });
+  };
+
+  const handleAddRow = () => {
+    setFormData({
+      ...formData,
+      sets: [...formData.sets, { reps: "", weight: "" }],
+    });
+  };
+
+  const handleRemoveRow = (index) => {
+    const values = [...formData.sets];
+    values.splice(index, 1);
+    setFormData({ ...formData, sets: values });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const exerciseDoc = doc(db, "users", user.uid, "exercises", id);
+        const updatedEntries = exercise.entries.map((entry) =>
+          entry.date.toMillis() === selectedEntry.date.toMillis()
+            ? formData
+            : entry
+        );
+        await updateDoc(exerciseDoc, {
+          entries: updatedEntries,
+        });
+        // Odśwież dane ćwiczenia
+        const exerciseSnapshot = await getDoc(exerciseDoc);
+        if (exerciseSnapshot.exists()) {
+          const data = exerciseSnapshot.data();
+          setExercise({
+            id: exerciseSnapshot.id,
+            ...data,
+            timestamp: data.timestamp.toDate(), // Konwersja Timestamp do Date
+          });
+        }
+        setIsModalOpen(false);
+        setSelectedEntry(null);
+      } else {
+        console.error("No user logged in!");
+      }
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
+  };
+
+  const formatDate = (date) => {
+    return date.toLocaleDateString("pl-PL");
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // Sprawdzenie, czy `exercise.entries` istnieje i ma elementy
+  const sortedEntries = exercise.entries
+    ? exercise.entries.sort((a, b) => b.date.toMillis() - a.date.toMillis())
+    : [];
+
+  // Pobranie tylko ostatnich dwóch dni treningowych
+  const lastTwoEntries = sortedEntries.slice(0, 2);
+
+  const modalContent = (
+    <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
+      <div className="bg-white p-8 rounded-lg shadow-lg relative">
+        <button
+          onClick={() => setIsModalOpen(false)}
+          className="absolute top-2 right-2 text-gray-700 text-3xl leading-none"
         >
-          test
-        </div>
-      ))}
-      <div className="flex justify-between w-[97%] fixed bottom-3">
-        <button className="text-2xl pr-3 mt-2 relative z-20">
+          &times;
+        </button>
+        <h2 className="text-2xl mb-4">Edytuj dzień treningowy</h2>
+        <form onSubmit={handleSubmit}>
+          <table className="table-auto w-full mb-4">
+            <thead>
+              <tr>
+                <th className="px-4 py-2">Seria</th>
+                <th className="px-4 py-2">Powtórzenia</th>
+                <th className="px-4 py-2">Ciężar (kg)</th>
+                <th className="px-4 py-2">Usuń</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formData.sets.map((row, index) => (
+                <tr key={index}>
+                  <td className="border px-4 py-2">{index + 1}</td>
+                  <td className="border px-4 py-2">
+                    <input
+                      type="number"
+                      name="reps"
+                      value={row.reps}
+                      onChange={(event) => handleChange(index, event)}
+                      className="w-full p-2"
+                    />
+                  </td>
+                  <td className="border px-4 py-2">
+                    <input
+                      type="number"
+                      name="weight"
+                      value={row.weight}
+                      onChange={(event) => handleChange(index, event)}
+                      className="w-full p-2"
+                    />
+                  </td>
+                  <td className="border px-4 py-2 text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveRow(index)}
+                      className="text-red-500"
+                    >
+                      Usuń
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <button
+            type="button"
+            onClick={handleAddRow}
+            className="bg-green-500 text-white px-4 py-2 rounded mb-4"
+          >
+            Dodaj serię
+          </button>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Zapisz
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="w-full flex flex-col text-white border border-slate-300 rounded-lg p-4 mt-2 bg-slate-900 bg-opacity-90 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 md:mt-0 h-[47vh] md:h-[50vh] overflow-auto">
+      <h1 className="text-2xl font-medium pl-3 mb-4">
+        {exercise ? exercise.name : "Ćwiczenie"}
+      </h1>
+
+      {lastTwoEntries.length > 0 ? (
+        lastTwoEntries.map((entry, index) => (
+          <div
+            key={index}
+            className="flex items-center justify-between border border-slate-300 rounded-lg p-4 mt-2 bg-slate-600 bg-opacity-60 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 overflow-auto max-h-96"
+            onClick={() => handleEditEntry(entry)}
+          >
+            <div className="overflow-auto max-h-32 w-full">
+              <p>Data: {formatDate(entry.date.toDate())}</p>
+              {entry.sets.map((set, i) => (
+                <div key={i}>
+                  <p>
+                    Seria {i + 1}: Powtórzenia - {set.reps}, Ciężar -{" "}
+                    {set.weight} kg
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      ) : (
+        <p>Brak dni treningowych dla tego ćwiczenia.</p>
+      )}
+      <div className="flex justify-between w-[93%] md:w-[95%] fixed bottom-5">
+        <button className="text-2xl pr-3 mt-2 relative z-20 border-2 rounded-md p-2 hover:text-[#f0a04b] hover:border-[#f0a04b]">
           Pełna historia
         </button>
-        <button className="text-2xl pr-3 mt-2 relative z-20">
+        <button
+          onClick={handleAddEntry}
+          className="text-2xl pr-3 mt-2 relative z-20 border-2 rounded-md p-2 hover:text-[#f0a04b] hover:border-[#f0a04b]"
+        >
           Dodaj wynik
         </button>
       </div>
+
+      {isModalOpen && ReactDOM.createPortal(modalContent, document.body)}
     </div>
   );
 };
