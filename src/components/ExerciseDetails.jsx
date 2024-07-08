@@ -56,7 +56,7 @@ const ExerciseDetails = () => {
     <div className="flex flex-col max-w-[1240px] mx-auto h-screen mt-[-37%] md:mt-[-163px] items-center">
       <div className="mt-[155px] md:mt-[15%] flex flex-col w-full justify-center md:grid md:grid-cols-2">
         <div className="flex flex-col h-auto mt-5 w-full">
-          <ExerciseResults data={exercise} />
+          <ExerciseResults id={exercise.id} />
         </div>
         <div className="flex h-auto w-full">
           <Max data={exercise} />
