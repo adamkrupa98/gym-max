@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 const ExcerciseBox = ({ exercise, max = 0, date = "-", exerciseId }) => {
   const formattedDate = date.toLocaleDateString();
   return (
-    <div className="w-full flex-col bg-transparent items-center h-full mb-2">
+    <div className="w-full flex-col bg-transparent items-center h-full mb-2 row">
       <Link
         to={`/exercise/details/${exerciseId}`}
         className="flex items-center justify-between border border-slate-300 rounded-lg p-4 mt-2 bg-slate-800 bg-opacity-60 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out"
