@@ -9,6 +9,7 @@ import {
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "../firebase"; // Upewnij się, że poprawnie importujesz swoje instancje Firebase
 import ReactDOM from "react-dom";
+import { Link } from "react-router-dom";
 
 const ExerciseResults = ({ id }) => {
   const [exercise, setExercise] = useState(null);
@@ -28,7 +29,7 @@ const ExerciseResults = ({ id }) => {
           setExercise({
             id: exerciseSnapshot.id,
             ...data,
-            timestamp: data.timestamp.toDate(), // Konwersja Timestamp do Date
+            timestamp: data.timestamp.toDate(),
           });
         } else {
           console.error("No such document!");
@@ -63,14 +64,13 @@ const ExerciseResults = ({ id }) => {
         await updateDoc(exerciseDoc, {
           entries: arrayUnion(newEntry),
         });
-        // Odśwież dane ćwiczenia
         const exerciseSnapshot = await getDoc(exerciseDoc);
         if (exerciseSnapshot.exists()) {
           const data = exerciseSnapshot.data();
           setExercise({
             id: exerciseSnapshot.id,
             ...data,
-            timestamp: data.timestamp.toDate(), // Konwersja Timestamp do Date
+            timestamp: data.timestamp.toDate(),
           });
         }
       } else {
@@ -120,14 +120,13 @@ const ExerciseResults = ({ id }) => {
         await updateDoc(exerciseDoc, {
           entries: updatedEntries,
         });
-        // Odśwież dane ćwiczenia
         const exerciseSnapshot = await getDoc(exerciseDoc);
         if (exerciseSnapshot.exists()) {
           const data = exerciseSnapshot.data();
           setExercise({
             id: exerciseSnapshot.id,
             ...data,
-            timestamp: data.timestamp.toDate(), // Konwersja Timestamp do Date
+            timestamp: data.timestamp.toDate(),
           });
         }
         setIsModalOpen(false);
@@ -148,12 +147,10 @@ const ExerciseResults = ({ id }) => {
     return <div>Loading...</div>;
   }
 
-  // Sprawdzenie, czy `exercise.entries` istnieje i ma elementy
   const sortedEntries = exercise.entries
     ? exercise.entries.sort((a, b) => b.date.toMillis() - a.date.toMillis())
     : [];
 
-  // Pobranie tylko ostatnich dwóch dni treningowych
   const lastTwoEntries = sortedEntries.slice(0, 2);
 
   const modalContent = (
@@ -211,35 +208,33 @@ const ExerciseResults = ({ id }) => {
               ))}
             </tbody>
           </table>
-          <button
-            type="button"
-            onClick={handleAddRow}
-            className="bg-green-500 text-white px-4 py-2 rounded mb-4"
-          >
-            Dodaj serię
-          </button>
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded"
-          >
-            Zapisz
-          </button>
+          <div className="flex justify-between">
+            <button
+              type="button"
+              onClick={handleAddRow}
+              className="bg-green-500 text-white px-4 py-2 rounded "
+            >
+              Dodaj serię
+            </button>
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 py-2 rounded"
+            >
+              Zapisz
+            </button>
+          </div>
         </form>
       </div>
     </div>
   );
-
   return (
-    <div className="w-full flex flex-col text-white border border-slate-300 rounded-lg p-4 mt-2 bg-slate-900 bg-opacity-90 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 md:mt-0 h-[47vh] md:h-[50vh] overflow-auto">
-      <h1 className="text-2xl font-medium pl-3 mb-4">
-        {exercise ? exercise.name : "Ćwiczenie"}
-      </h1>
-
+    <div className="w-full flex flex-col text-gray-900 border border-slate-400 rounded-lg p-4 mt-2 bg-gray-200 bg-opacity-30 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 md:mt-0 h-[47vh] md:h-[50vh] overflow-auto">
+      <h1 className="text-2xl font-medium pl-3 mb-4">{exercise.exercise}</h1>
       {lastTwoEntries.length > 0 ? (
         lastTwoEntries.map((entry, index) => (
           <div
             key={index}
-            className="flex items-center justify-between border border-slate-300 rounded-lg p-4 mt-2 bg-slate-600 bg-opacity-60 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 overflow-auto max-h-96"
+            className="flex items-center justify-between border border-slate-300 rounded-lg p-4 mt-2 bg-slate-400 bg-opacity-60 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 overflow-auto max-h-96 hover:bg-slate-100 hover:text-black"
             onClick={() => handleEditEntry(entry)}
           >
             <div className="overflow-auto max-h-32 w-full">
@@ -259,12 +254,15 @@ const ExerciseResults = ({ id }) => {
         <p>Brak dni treningowych dla tego ćwiczenia.</p>
       )}
       <div className="flex justify-between w-[93%] md:w-[95%] fixed bottom-5">
-        <button className="text-2xl pr-3 mt-2 relative z-20 border-2 rounded-md p-2 hover:text-[#f0a04b] hover:border-[#f0a04b]">
+        <Link
+          to={`/fullHistory/${exercise.id}`}
+          className="text-2xl pr-3 mt-2 relative z-20 border-2 border-slate-300 rounded-md p-2 hover:text-[#f0a04b] hover:border-[#f0a04b]"
+        >
           Pełna historia
-        </button>
+        </Link>
         <button
           onClick={handleAddEntry}
-          className="text-2xl pr-3 mt-2 relative z-20 border-2 rounded-md p-2 hover:text-[#f0a04b] hover:border-[#f0a04b]"
+          className="text-2xl pr-3 mt-2 relative z-20 border-2 rounded-md border-slate-300 p-2 hover:text-[#f0a04b] hover:border-[#f0a04b]"
         >
           Dodaj wynik
         </button>

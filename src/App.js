@@ -10,6 +10,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import ForgotPassword from "./components/ForgotPassword";
 import Account from "./components/Account";
+import FullHistory from "./components/FullHistory";
 function App() {
   return (
     <Router>
@@ -43,6 +44,9 @@ function App() {
             </Route>
             <Route exact path="/settings">
               <Account />
+            </Route>
+            <Route exact path="/fullHistory/:id">
+              <FullHistory />
             </Route>
           </Switch>
           <Footer />

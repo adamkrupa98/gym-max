@@ -8,6 +8,7 @@ import { collection, query, getDocs } from "firebase/firestore";
 const Exercises = () => {
   const [exercises, setExercises] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const auth = getAuth();
 
   useEffect(() => {
@@ -50,39 +51,50 @@ const Exercises = () => {
     );
   }
 
+  const autoSelect = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const filterExercises = exercises.filter((exercise) =>
+    exercise.exercise.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="max-w-[1240px] w-full flex flex-col min-h-screen h-auto mx-auto">
-      <h1 className="md:mt-16 p-3 font-bold text-xl md:text-xl lg:text-xl">
-        Zapisane ćwiczenia: {exercises.length > 0 ? exercises.length : ""}
-      </h1>
-      <div className="flex w-full mt-3 p-3 items-center">
-        <input
-          type="text"
-          id="first_name"
-          className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block md:w-[15%] p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 h-10"
-          placeholder="Szukaj..."
-          required
-        />
-        <Link
-          id="add_new"
-          to="/create"
-          className="bg-white border-[#f0a04b] border-2 rounded-md p-2 font-medium text-[#f0a04b] w-40 text-center hover:text-white hover:bg-[#f0a04b] ml-5"
-        >
-          + Dodaj nowe
-        </Link>
-      </div>
-      <div>
-        <ul className="flex flex-col w-full max-w-[1240px] mt-5 pb-10 p-3">
-          {exercises.map((x, index) => (
-            <ExcerciseBox
-              key={index}
-              exerciseId={x.id}
-              max={x.score}
-              date={x.timestamp}
-              exercise={x.exercise}
-            />
-          ))}
-        </ul>
+    <div className="max-w-[1240px] w-full flex flex-col min-h-screen h-auto mx-auto mt-[-163px]">
+      <div className="mt-[163px]">
+        <h1 className="md:mt-16 p-3 font-bold text-xl md:text-xl lg:text-xl">
+          Zapisane ćwiczenia: {exercises.length > 0 ? exercises.length : ""}
+        </h1>
+        <div className="flex w-full mt- p-3 items-center">
+          <input
+            type="text"
+            id="first_name"
+            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block md:w-[15%] p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 h-10"
+            placeholder="Szukaj..."
+            required
+            onChange={autoSelect}
+          />
+          <Link
+            id="add_new"
+            to="/create"
+            className="bg-white border-[#f0a04b] border-2 rounded-md p-2 font-medium text-[#f0a04b] w-40 text-center hover:text-white hover:bg-[#f0a04b] ml-5"
+          >
+            + Dodaj nowe
+          </Link>
+        </div>
+        <div>
+          <ul className="flex flex-col w-full max-w-[1240px] mt-5 pb-10 p-3">
+            {filterExercises.map((x, index) => (
+              <ExcerciseBox
+                key={index}
+                exerciseId={x.id}
+                max={x.score}
+                date={x.timestamp}
+                exercise={x.exercise}
+              />
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
   );
