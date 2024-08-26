@@ -106,6 +106,36 @@ const ExerciseResults = ({ id }) => {
     setFormData({ ...formData, sets: values });
   };
 
+  const handleDeleteEntry = async (entryToDelete) => {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const exerciseDoc = doc(db, "users", user.uid, "exercises", id);
+        const updatedEntries = exercise.entries.filter(
+          (entry) => entry.date.toMillis() !== entryToDelete.date.toMillis()
+        );
+        await updateDoc(exerciseDoc, {
+          entries: updatedEntries,
+        });
+        const exerciseSnapshot = await getDoc(exerciseDoc);
+        if (exerciseSnapshot.exists()) {
+          const data = exerciseSnapshot.data();
+          setExercise({
+            id: exerciseSnapshot.id,
+            ...data,
+            timestamp: data.timestamp.toDate(),
+          });
+        }
+        setIsModalOpen(false);
+        setSelectedEntry(null);
+      } else {
+        console.error("No user logged in!");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -151,7 +181,7 @@ const ExerciseResults = ({ id }) => {
     ? exercise.entries.sort((a, b) => b.date.toMillis() - a.date.toMillis())
     : [];
 
-  const lastTwoEntries = sortedEntries.slice(0, 2);
+  const lastTwoEntries = sortedEntries.slice(0, 3);
 
   const modalContent = (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
@@ -184,6 +214,7 @@ const ExerciseResults = ({ id }) => {
                       value={row.reps}
                       onChange={(event) => handleChange(index, event)}
                       className="w-full p-2"
+                      required
                     />
                   </td>
                   <td className="border px-4 py-2">
@@ -193,6 +224,7 @@ const ExerciseResults = ({ id }) => {
                       value={row.weight}
                       onChange={(event) => handleChange(index, event)}
                       className="w-full p-2"
+                      required
                     />
                   </td>
                   <td className="border px-4 py-2 text-center">
@@ -217,6 +249,13 @@ const ExerciseResults = ({ id }) => {
               Dodaj serię
             </button>
             <button
+              type="button"
+              onClick={() => handleDeleteEntry(selectedEntry)}
+              className="bg-red-500 text-white px-4 py-2 rounded"
+            >
+              Usuń dzień
+            </button>
+            <button
               type="submit"
               className="bg-blue-500 text-white px-4 py-2 rounded"
             >
@@ -228,7 +267,7 @@ const ExerciseResults = ({ id }) => {
     </div>
   );
   return (
-    <div className="w-full flex flex-col text-gray-900 border border-slate-400 rounded-lg p-4 mt-2 bg-gray-200 bg-opacity-30 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 md:mt-0 h-[47vh] md:h-[50vh] overflow-auto">
+    <div className="w-full flex flex-col text-gray-900 border border-slate-400 rounded-lg p-4 mt-2 bg-gray-200 bg-opacity-30 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 md:mt-0 h-[47vh] md:h-full overflow-auto">
       <h1 className="text-2xl font-medium pl-3 mb-4">{exercise.exercise}</h1>
       {lastTwoEntries.length > 0 ? (
         lastTwoEntries.map((entry, index) => (
@@ -237,23 +276,27 @@ const ExerciseResults = ({ id }) => {
             className="flex items-center justify-between border border-slate-300 rounded-lg p-4 mt-2 bg-slate-400 bg-opacity-60 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 overflow-auto max-h-96 hover:bg-slate-100 hover:text-black"
             onClick={() => handleEditEntry(entry)}
           >
-            <div className="overflow-auto max-h-32 w-full">
-              <p>Data: {formatDate(entry.date.toDate())}</p>
-              {entry.sets.map((set, i) => (
-                <div key={i}>
-                  <p>
-                    Seria {i + 1}: Powtórzenia - {set.reps}, Ciężar -{" "}
-                    {set.weight} kg
-                  </p>
-                </div>
-              ))}
+            <div className="overflow-auto w-full">
+              <p className="font-medium">{formatDate(entry.date.toDate())}</p>
+              <div className="flex">
+                {entry.sets.map((set, i) => {
+                  return (
+                    <p key={i} className="ml-3">
+                      {/*  */}
+                      {i + 1 === entry.sets.length
+                        ? `${set.reps}x${set.weight}kg`
+                        : `${set.reps}x${set.weight}kg,`}
+                    </p>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ))
       ) : (
         <p>Brak dni treningowych dla tego ćwiczenia.</p>
       )}
-      <div className="flex justify-between w-[93%] md:w-[95%] fixed bottom-5">
+      <div className="flex justify-between w-[93%] md:w-[95%] md:mt-5 bottom-5">
         <Link
           to={`/fullHistory/${exercise.id}`}
           className="text-2xl pr-3 mt-2 relative z-20 border-2 border-slate-300 rounded-md p-2 hover:text-[#f0a04b] hover:border-[#f0a04b]"
