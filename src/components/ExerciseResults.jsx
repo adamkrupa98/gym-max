@@ -11,7 +11,7 @@ import { db } from "../firebase"; // Upewnij się, że poprawnie importujesz swo
 import ReactDOM from "react-dom";
 import { Link } from "react-router-dom";
 
-const ExerciseResults = ({ id }) => {
+const ExerciseResults = ({ id, fetchExercises }) => {
   const [exercise, setExercise] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -114,8 +114,14 @@ const ExerciseResults = ({ id }) => {
         const updatedEntries = exercise.entries.filter(
           (entry) => entry.date.toMillis() !== entryToDelete.date.toMillis()
         );
+        console.log(updatedEntries);
+        let weights = updatedEntries.flatMap((entry) =>
+          entry.sets.map((set) => Number(set.weight))
+        );
+        let maxWeight = Math.max(...weights);
         await updateDoc(exerciseDoc, {
           entries: updatedEntries,
+          score: maxWeight,
         });
         const exerciseSnapshot = await getDoc(exerciseDoc);
         if (exerciseSnapshot.exists()) {
@@ -126,6 +132,7 @@ const ExerciseResults = ({ id }) => {
             timestamp: data.timestamp.toDate(),
           });
         }
+        fetchExercises(user.uid);
         setIsModalOpen(false);
         setSelectedEntry(null);
       } else {
@@ -138,6 +145,16 @@ const ExerciseResults = ({ id }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("wchodzi", formData);
+    let weights = formData.sets.map((set) => Number(set.weight));
+    let maxWeight = Math.max(...weights);
+    if (
+      maxWeight < Number(exercise.score) &&
+      weights.includes(Number(exercise.score))
+    ) {
+      maxWeight = Number(exercise.score);
+    }
+    console.log(maxWeight);
     try {
       const user = auth.currentUser;
       if (user) {
@@ -147,8 +164,10 @@ const ExerciseResults = ({ id }) => {
             ? formData
             : entry
         );
+
         await updateDoc(exerciseDoc, {
           entries: updatedEntries,
+          score: maxWeight,
         });
         const exerciseSnapshot = await getDoc(exerciseDoc);
         if (exerciseSnapshot.exists()) {
@@ -159,6 +178,7 @@ const ExerciseResults = ({ id }) => {
             timestamp: data.timestamp.toDate(),
           });
         }
+        fetchExercises(user.uid);
         setIsModalOpen(false);
         setSelectedEntry(null);
       } else {
@@ -253,7 +273,7 @@ const ExerciseResults = ({ id }) => {
               onClick={() => handleDeleteEntry(selectedEntry)}
               className="bg-red-500 text-white px-4 py-2 rounded"
             >
-              Usuń dzień
+              Usuń trening
             </button>
             <button
               type="submit"
@@ -296,7 +316,7 @@ const ExerciseResults = ({ id }) => {
       ) : (
         <p>Brak dni treningowych dla tego ćwiczenia.</p>
       )}
-      <div className="flex justify-between w-[93%] md:w-[95%] md:mt-5 bottom-5">
+      <div className="fixed w-[93%] md:w-[95%] md:mt-5 bottom-5 flex justify-between">
         <Link
           to={`/fullHistory/${exercise.id}`}
           className="text-2xl pr-3 mt-2 relative z-20 border-2 border-slate-300 rounded-md p-2 hover:text-[#f0a04b] hover:border-[#f0a04b]"
@@ -307,7 +327,7 @@ const ExerciseResults = ({ id }) => {
           onClick={handleAddEntry}
           className="text-2xl pr-3 mt-2 relative z-20 border-2 rounded-md border-slate-300 p-2 hover:text-[#f0a04b] hover:border-[#f0a04b]"
         >
-          Dodaj wynik
+          Dodaj trening
         </button>
       </div>
 
