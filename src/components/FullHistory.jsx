@@ -12,15 +12,10 @@ const FullHistory = () => {
   useEffect(() => {
     const fetchExercises = async (userId) => {
       try {
-        console.log("Fetching exercise for user:", userId);
-        console.log(id);
         const exerciseDoc = doc(db, "users", userId, "exercises", id);
-        console.log("Exercise doc reference:", exerciseDoc.path);
         const exerciseSnapshot = await getDoc(exerciseDoc);
-        console.log("Exercise snapshot:", exerciseSnapshot);
         if (exerciseSnapshot.exists()) {
           const data = exerciseSnapshot.data();
-          console.log("Exercise data:", data);
           setExercise({
             id: exerciseSnapshot.id,
             ...data,
@@ -48,6 +43,11 @@ const FullHistory = () => {
     return () => unsubscribe();
   }, [auth, id]);
 
+  const formatDate = (date) => {
+    return date.toLocaleDateString("pl-PL");
+  };
+
+  console.log(exercise);
   if (loading) {
     return (
       <div className="flex w-full min-h-screen justify-center items-center flex-col">
@@ -65,20 +65,36 @@ const FullHistory = () => {
   }
 
   return (
-    <div className="max-w-[800px] mx-auto p-4 mt-10">
-      <div className="h-custom flex flex-col justify-center items-center w-full border border-slate-400 rounded-lg p-4 bg-gray-200 bg-opacity-30 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 overflow-auto">
-        <h1 className="text-2xl font-bold mb-4">Historia Ćwiczenia</h1>
+    <div className="max-w-[800px] mx-auto p-4 ">
+      <h1 className="text-2xl mb-2">Pełna historia</h1>
+      <div className="h-custom flex flex-col w-full border border-slate-400 rounded-lg p-4 bg-gray-200 bg-opacity-30 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 overflow-auto">
         <div className="text-lg">
-          <p>ID: {exercise.id}</p>
-          <p>Nazwa: {exercise.exercise}</p>
-          <p>
-            Data:{" "}
-            {exercise.timestamp
-              ? exercise.timestamp.toLocaleDateString()
-              : "Brak daty"}
-          </p>
-          <p>Wynik: {exercise.score}</p>
-          {/* Dodaj inne szczegóły ćwiczenia, jeśli istnieją */}
+          {exercise.entries.map((training, index) => {
+            return (
+              <div
+                key={index}
+                className="flex items-center justify-between border border-slate-300 rounded-lg p-4 mt-2 bg-slate-400 bg-opacity-60 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 overflow-auto max-h-96 hover:bg-slate-100 hover:text-black"
+              >
+                <div className="overflow-auto w-full">
+                  <p className="font-medium">
+                    {formatDate(training.date.toDate())}
+                  </p>
+                  <div className="flex">
+                    {training.sets.map((set, i) => {
+                      return (
+                        <p key={i} className="ml-3">
+                          {/*  */}
+                          {i + 1 === training.sets.length
+                            ? `${set.reps}x${set.weight}kg`
+                            : `${set.reps}x${set.weight}kg,`}
+                        </p>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
