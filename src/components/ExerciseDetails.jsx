@@ -62,7 +62,7 @@ const ExerciseDetails = () => {
         </div>
         <div className="flex w-full flex-col">
           <Max data={exercise} />
-          <Progress />
+          <Progress data={exercise} />
         </div>
       </div>
     </div>
