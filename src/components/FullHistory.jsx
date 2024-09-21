@@ -65,7 +65,7 @@ const FullHistory = () => {
   }
 
   return (
-    <div className="max-w-[800px] mx-auto p-4 ">
+    <div className="max-w-[800px] mx-auto p-4 md:mt-[8px] ">
       <h1 className="text-2xl mb-2">Pełna historia</h1>
       <div className="h-custom flex flex-col w-full border border-slate-400 rounded-lg p-4 bg-gray-200 bg-opacity-30 backdrop-blur-md shadow-lg hover:shadow-xl transition duration-300 ease-in-out relative z-10 overflow-auto">
         <div className="text-lg">

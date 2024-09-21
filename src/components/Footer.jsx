@@ -12,7 +12,7 @@ const Footer = () => {
   }
 
   return (
-    <div className="w-full h-auto bg-[#f0a04b] flex p-4 items-center justify-center">
+    <div className="w-full h-auto bg-[#f0a04b] flex p-3 items-center justify-center">
       <p className="w-1/3 text-center  text-white">Kontakt</p>
       <div className="flex w-1/3 mx-auto item-center justify-between">
         <FaFacebookSquare size={35} className="text-white" />

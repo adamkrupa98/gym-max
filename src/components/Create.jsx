@@ -37,7 +37,7 @@ const Create = () => {
     <>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="w-full max-w-[1240px] h-screen mt-[-163px] flex flex-col justify-center items-center mx-auto"
+        className="w-full max-w-[1240px] h-screen mt-[-155px] flex flex-col justify-center items-center mx-auto"
       >
         <div className="max-w-[1200px] w-full p-3">
           <div className="flex">

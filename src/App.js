@@ -49,7 +49,7 @@ function App() {
               <FullHistory />
             </Route>
           </Switch>
-          <Footer />
+          <Footer className="footer" />
         </div>
       </div>
     </Router>

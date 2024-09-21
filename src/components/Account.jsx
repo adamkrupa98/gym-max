@@ -35,7 +35,7 @@ const Account = () => {
 
   if (loading) {
     return (
-      <div className="flex w-full h-screen mt-[-163px] justify-center items-center flex-col">
+      <div className="flex w-full h-screen mt-[-155px] justify-center items-center flex-col">
         <p className="text-2xl text-[#f0a04b]"> Loading...</p>
       </div>
     );
@@ -43,7 +43,7 @@ const Account = () => {
 
   if (!userData) {
     return (
-      <div className="flex w-full h-screen mt-[-163px] justify-center items-center flex-col">
+      <div className="flex w-full h-screen mt-[-155px] justify-center items-center flex-col">
         <p className="text-2xl text-[#f0a04b]"> No user data found.</p>
       </div>
     );
@@ -62,7 +62,7 @@ const Account = () => {
     }
   };
   return (
-    <div className="flex w-full h-screen mt-[-163px] justify-center items-center flex-col ">
+    <div className="flex w-full h-screen mt-[-155px] justify-center items-center flex-col ">
       <div className=" max-w-[1200px] w-full p-3">
         <div className="text-xl md:text-2xl mb-5 flex">
           <p className="w-1/3 md:w-1/4 font-medium">Imię:</p>{" "}
