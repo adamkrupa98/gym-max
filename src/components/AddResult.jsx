@@ -38,7 +38,7 @@ const AddResult = () => {
     <>
       <form
         onSubmit={handleSumbit}
-        className="max-w-[1240px] w-full flex mx-auto items-center flex-col h-screen mt-[-164px] justify-center"
+        className="max-w-[1240px] w-full flex mx-auto items-center flex-col h-screen mt-[-155px] justify-center"
       >
         <label
           htmlFor="wynik"

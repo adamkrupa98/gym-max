@@ -24,7 +24,7 @@ const Home = () => {
   return (
     <>
       {!islogged && (
-        <div className="max-w-[1240px] mt-[-163px] w-full h-screen mx-auto flex flex-col justify-center items-center px-3 text-center ">
+        <div className="max-w-[1240px] mt-[-155px] w-full h-screen mx-auto flex flex-col justify-center items-center px-3 text-center ">
           <div className=" p-6 flex flex-col items-center">
             <h1 className="lg:text-4xl md:text-3xl text-2xl p-4 font-bold mt-20 text">
               Witaj na GymMax - Twoim osobistym towarzyszu w podnoszeniu
@@ -45,7 +45,7 @@ const Home = () => {
         </div>
       )}
       {islogged && (
-        <div className="max-w-[1240px] mt-[-163px] w-full h-screen mx-auto flex flex-col justify-center items-center px-3 text-center ">
+        <div className="max-w-[1240px] mt-[-155px] w-full h-screen mx-auto flex flex-col justify-center items-center px-3 text-center ">
           <div className=" p-5 flex flex-col md:rounded-full items-center ">
             <h1 className="lg:text-2xl md:text-3xl text-2xl p-4 font-bold">
               Witaj! Cieszymy się, że jesteś ponownie z nami na GymMax - Twoim

@@ -60,8 +60,8 @@ const Exercises = () => {
   );
 
   return (
-    <div className="max-w-[1240px] w-full flex flex-col min-h-screen h-auto mx-auto mt-[-163px]">
-      <div className="mt-[163px]">
+    <div className="max-w-[1240px] w-full flex flex-col min-h-screen h-auto mx-auto mt-[-155px]">
+      <div className="mt-[155px]">
         <h1 className="md:mt-16 p-3 font-bold text-xl md:text-xl lg:text-xl">
           Zapisane ćwiczenia: {exercises.length > 0 ? exercises.length : ""}
         </h1>
