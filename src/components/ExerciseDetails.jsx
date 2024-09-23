@@ -57,7 +57,7 @@ const ExerciseDetails = () => {
   return (
     <div className="flex flex-col max-w-[1240px] mx-auto h-auto md:h-screen md:mt-[-155px] md:items-center">
       <div className="md:mt-[20%] flex flex-col w-full justify-center md:grid md:grid-cols-2">
-        <div className="flex flex-col h-auto md:h-[400px] mt-5 w-full">
+        <div className="flex flex-col h-auto md:h-[430px] mt-5 w-full">
           <ExerciseResults id={exercise.id} fetchExercises={fetchExercises} />
         </div>
         <div className="flex w-full flex-col">

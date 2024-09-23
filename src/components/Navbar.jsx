@@ -81,6 +81,9 @@ const Navbar = () => {
             <>
               <ul className="md:text-2xl hidden md:flex justify-between">
                 <li className="p-4">
+                  <Link to="/cardio">Cardio</Link>
+                </li>
+                <li className="p-4">
                   <Link to="/exercises">Ćwiczenia</Link>
                 </li>
                 <li className="p-4 relative">
@@ -133,6 +136,11 @@ const Navbar = () => {
         </Link>
         {islogged && (
           <ul className="md:text-2xl md:flex justify-between">
+            <li className="p-4">
+              <Link to="/cardio" onClick={handleClick}>
+                Cardio
+              </Link>
+            </li>
             <li className="p-4">
               <Link to="/exercises" onClick={handleClick}>
                 Ćwiczenia

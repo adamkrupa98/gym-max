@@ -11,6 +11,7 @@ import Register from "./components/Register";
 import ForgotPassword from "./components/ForgotPassword";
 import Account from "./components/Account";
 import FullHistory from "./components/FullHistory";
+import Cardio from "./components/Cardio";
 function App() {
   return (
     <Router>
@@ -20,6 +21,9 @@ function App() {
           <Switch>
             <Route exact path="/">
               <Home />
+            </Route>
+            <Route exact path="/cardio">
+              <Cardio />
             </Route>
             <Route exact path="/exercises">
               <Exercises />
