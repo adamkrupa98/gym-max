@@ -21,7 +21,7 @@ const Exercises = () => {
           return {
             id: doc.id,
             ...data,
-            timestamp: data.timestamp.toDate(), // Konwersja Timestamp do Date
+            timestamp: data.timestamp.toDate(),
           };
         });
         setExercises(exercisesData);

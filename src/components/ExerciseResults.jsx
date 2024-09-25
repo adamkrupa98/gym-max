@@ -145,7 +145,6 @@ const ExerciseResults = ({ id, fetchExercises }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("wchodzi", formData);
     let weights = formData.sets.map((set) => Number(set.weight));
     let maxWeight = Math.max(...weights);
     if (
