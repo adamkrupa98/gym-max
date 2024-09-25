@@ -1,18 +1,85 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { useForm, userForm } from "react-hook-form";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { db } from "../firebase";
+import { collection, addDoc, getDocs, query } from "firebase/firestore";
+
 const Cardio = () => {
   const [selectedRange, setSelectedRange] = useState("week");
-  const [isModalOpen, setIsModalOpen] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [cardoTrainings, setCardioTrainings] = useState([]);
+  const [loading, setLoading] = useState(true);
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const auth = getAuth();
+
+  useEffect(() => {
+    const fetchCardioTrainings = async (userId) => {
+      try {
+        const q = query(collection(db, "users", userId, "cardio"));
+        const cardioSnapshot = await getDocs(q);
+        const cardioData = cardioSnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            ...data,
+            timestamp: data.timestamp.toDate(),
+          };
+        });
+        setCardioTrainings(cardioData);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        fetchCardioTrainings(user.uid);
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [auth]);
+
+  const onSubmit = async (data) => {
+    const user = auth.currentUser;
+    if (user) {
+      const cardioCollection = collection(db, "users", user.uid, "cardio");
+
+      await addDoc(cardioCollection, {
+        time: data.time,
+        kcal: data.kcal,
+        timestamp: new Date(),
+      });
+
+      const cardioSnapshot = await getDocs(cardioCollection);
+      const cardioData = cardioSnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          timestamp: data.timestamp.toDate(),
+        };
+      });
+      setCardioTrainings(cardioData);
+      setIsModalOpen(false);
+      reset();
+    }
   };
+  useEffect(() => {
+    console.log(cardoTrainings);
+  }, [cardoTrainings]);
   const modalContent = (
     <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
       <div className="bg-white p-8 rounded-lg shadow-lg relative w-[500px]">
@@ -23,15 +90,39 @@ const Cardio = () => {
           &times;
         </button>
         <p className="text-center text-2xl">Uzupełnij dane treningu</p>
-        <div className="mt-5">
+        <div className="mt-9">
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="form-control flex flex-col">
-              <label className="text-xl">Czas (min.)</label>
-              <input type="number" name="time" {...register("time")} />
+              <label className="text-sm ">Czas (min.)</label>
+              <input
+                className="peer bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:border-[#f0a04b] focus:outline-none focus:ring-0"
+                type="number"
+                name="time"
+                {...register("time", { required: true })}
+              />
+              {errors.time && (
+                <span className="text-red-500">To pole jest wymagane</span>
+              )}
             </div>
-            <div className="form-control flex flex-col">
-              <label className="text-xl">Kcal</label>
-              <input type="number" name="kcal" {...register("kcal")} />
+            <div className="form-control flex flex-col mt-4">
+              <label className="text-sm ">Kcal</label>
+              <input
+                className="peer bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:border-[#f0a04b] focus:outline-none focus:ring-0border-b-2 rounded-sm appearance-none"
+                type="number"
+                name="kcal"
+                {...register("kcal", { required: true })}
+              />
+              {errors.kcal && (
+                <span className="text-red-500">To pole jest wymagane</span>
+              )}
+            </div>
+            <div className="flex">
+              <button
+                type="submit"
+                className="border-2 border-[#f0a04b] p-1 rounded-md mt-6 bg-[#f0a04b] text-white hover:border-[#ab733771]"
+              >
+                Zapisz
+              </button>
             </div>
           </form>
         </div>
@@ -73,10 +164,15 @@ const Cardio = () => {
               className="bg-[#f0a04b] text-2xl p-1 rounded-md border-2 text-white hover:border-[#ab733771]"
               onClick={() => setIsModalOpen(true)}
             >
-              Dodaj cardio
+              Dodaj trening
             </button>
           </div>
         </div>
+        {loading && (
+          <div className="mt-10 flex">
+            <p>Wczytywanie danych...</p>
+          </div>
+        )}
       </div>
       {isModalOpen && ReactDOM.createPortal(modalContent, document.body)}
     </div>
