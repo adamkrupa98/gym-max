@@ -91,7 +91,7 @@ const Progress = ({ data }) => {
             <p className="text-4xl text-green-500 mt-5">{progress}%</p>
             <p className="text-2xl">
               <span>
-                ({min}kg ---> {max}kg)
+                ({min}kg ---{">"} {max}kg)
               </span>
             </p>
           </>
