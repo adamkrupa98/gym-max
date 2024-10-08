@@ -5,13 +5,16 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { db } from "../firebase";
 import { collection, addDoc, getDocs, query } from "firebase/firestore";
 import { BarChart } from "@mui/x-charts/BarChart";
-
+import { IoStatsChart } from "react-icons/io5";
+import CardioTrainigBox from "./CardioTrainigBox";
 const Cardio = () => {
   const [selectedRange, setSelectedRange] = useState("week");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [cardioTrainings, setCardioTrainings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState(0);
+  const [chartSet, setChartSet] = useState(false);
+  const [trainingFilteredArr, setTrainigFilteredArr] = useState(null);
   const [xLabels, setXLabels] = useState([
     "Poniedziałek",
     "Wtorek",
@@ -22,9 +25,9 @@ const Cardio = () => {
     "Niedziela",
   ]);
 
-  const uData = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
-  const pData = [2400, 1398, 9800, 3908, 4800, 3800, 4300];
-
+  const [kcalData, setKcalData] = useState([0]);
+  const [timeData, setTimeData] = useState([0]);
+  const [sumKcal, setSumKcal] = useState(0);
   const {
     register,
     handleSubmit,
@@ -95,29 +98,101 @@ const Cardio = () => {
   useEffect(() => {
     let now = new Date();
     let dataRange = new Date();
-    dataRange.setDate(now.getDate() - days);
+    dataRange.setDate(now.getDate() - (days - 1));
+    dataRange.setHours(0, 0, 0, 0);
     let trainingFiltered = cardioTrainings.filter((training) => {
       let trainingDate = training.timestamp;
-      return trainingDate >= dataRange && trainingDate <= now;
+      return trainingDate > dataRange && trainingDate <= now;
     });
+    let sum = 0;
+    setTrainigFilteredArr(trainingFiltered);
+    if (selectedRange === "week") {
+      let kcalArray = Array(7).fill(0);
+      let timeArray = Array(7).fill(0);
+      trainingFiltered.forEach((training) => {
+        let dateTrainig = new Date(training.timestamp);
+        let day = dateTrainig.getDay();
+        let startingDay = (now.getDay() - 6 + 7) % 7;
+        let index = (day - startingDay + 7) % 7;
+
+        kcalArray[index] = Number(training.kcal);
+        timeArray[index] = Number(training.time);
+
+        sum += Number(training.kcal);
+      });
+      setKcalData(kcalArray);
+      setTimeData(timeArray);
+    } else if (selectedRange === "month") {
+      let weeksInMonth = countWeeksInLastMonthRange();
+      let kcalArray = Array(weeksInMonth).fill(0);
+      let timeArray = Array(weeksInMonth).fill(0);
+      trainingFiltered.forEach((training) => {
+        let dateTrainig = training.timestamp;
+        let weekOfMonth = getWeekInLastMonthRange(dateTrainig);
+        kcalArray[weekOfMonth - 1] =
+          kcalArray[weekOfMonth - 1] + Number(training.kcal);
+        timeArray[weekOfMonth - 1] =
+          Number(timeArray[weekOfMonth - 1]) + Number(training.time);
+
+        sum += Number(training.kcal);
+      });
+      setKcalData(kcalArray);
+      setTimeData(timeArray);
+    } else if (selectedRange === "halfyear") {
+      let kcalArray = Array(6).fill(0);
+      let timeArray = Array(6).fill(0);
+      trainingFiltered.forEach((training) => {
+        let dateTrainig = new Date(training.timestamp);
+        let month = dateTrainig.getMonth();
+        let startingMonth = (now.getMonth() - 5 + 12) % 12;
+        let index = (month - startingMonth + 12) % 12;
+        kcalArray[index] += Number(training.kcal);
+        timeArray[index] += Number(training.time);
+
+        sum += Number(training.kcal);
+      });
+      setKcalData(kcalArray);
+      setTimeData(timeArray);
+    } else if (selectedRange === "year") {
+      let kcalArray = Array(12).fill(0);
+      let timeArray = Array(12).fill(0);
+      trainingFiltered.forEach((training) => {
+        let dateTrainig = new Date(training.timestamp);
+        let month = dateTrainig.getMonth();
+        let startingMonth = (now.getMonth() - 11 + 12) % 12;
+        let index = (month - startingMonth + 12) % 12;
+        kcalArray[index] += Number(training.kcal);
+        timeArray[index] += Number(training.time);
+
+        sum += Number(training.kcal);
+      });
+      setKcalData(kcalArray);
+      setTimeData(timeArray);
+    }
+    setSumKcal(sum);
   }, [cardioTrainings, days]);
 
   function countWeeksInLastMonthRange() {
     const today = new Date();
-    const lastMonth = new Date();
+    const oneMonthAgo = new Date(today);
 
-    lastMonth.setMonth(today.getMonth() - 1);
-
-    const diffInTime = today.getTime() - lastMonth.getTime();
+    oneMonthAgo.setMonth(today.getMonth() - 1);
+    const diffInTime = today.getTime() - oneMonthAgo.getTime();
     const diffInDays = Math.ceil(diffInTime / (1000 * 60 * 60 * 24));
-
     const fullWeeks = Math.floor(diffInDays / 7);
-
     const extraDays = diffInDays % 7 !== 0 ? 1 : 0;
-
     return fullWeeks + extraDays;
   }
 
+  function getWeekInLastMonthRange(date) {
+    const today = new Date();
+    const oneMonthAgo = new Date(today);
+    oneMonthAgo.setMonth(today.getMonth() - 1);
+    const diffInTime = date.getTime() - oneMonthAgo.getTime();
+    const diffInDays = Math.ceil(diffInTime / (1000 * 60 * 60 * 24));
+    const weekNumber = Math.ceil(diffInDays / 7);
+    return weekNumber;
+  }
   useEffect(() => {
     const daysMapping = {
       week: 7,
@@ -232,55 +307,87 @@ const Cardio = () => {
   return (
     <div className="flex h-screen mt-[-155px] justify-center">
       <div className="mt-[20vh] max-w-[800px] w-full">
-        <div className="flex justify-between">
-          <div className="flex justify-between w-[50%]">
-            <button
-              className={`text-xl border w-[35%] rounded-md ${selectedRange === "week" ? "bg-[#f0a04b]" : "bg-gray-400"} text-white p-1`}
-              onClick={() => setSelectedRange("week")}
-            >
-              Tydzień
-            </button>
-            <button
-              className={`text-xl border w-[35%] rounded-md ${selectedRange === "month" ? "bg-[#f0a04b]" : "bg-gray-400"} text-white p-1`}
-              onClick={() => setSelectedRange("month")}
-            >
-              Miesiąc
-            </button>
-            <button
-              className={`text-xl border w-[35%] rounded-md ${selectedRange === "halfyear" ? "bg-[#f0a04b]" : "bg-gray-400"} text-white p-1`}
-              onClick={() => setSelectedRange("halfyear")}
-            >
-              Pół roku
-            </button>
-            <button
-              className={`text-xl border w-[35%] rounded-md ${selectedRange === "year" ? "bg-[#f0a04b]" : "bg-gray-400"} text-white p-1`}
-              onClick={() => setSelectedRange("year")}
-            >
-              Rok
-            </button>
+        <div className="flex flex-col">
+          <div className="flex justify-between ">
+            <div className="flex justify-between w-[50%]">
+              <button
+                className={`text-xl border w-[35%] rounded-md ${selectedRange === "week" ? "bg-[#f0a04b]" : "bg-gray-400"} text-white p-1`}
+                onClick={() => setSelectedRange("week")}
+              >
+                Tydzień
+              </button>
+              <button
+                className={`text-xl border w-[35%] rounded-md ${selectedRange === "month" ? "bg-[#f0a04b]" : "bg-gray-400"} text-white p-1`}
+                onClick={() => setSelectedRange("month")}
+              >
+                Miesiąc
+              </button>
+              <button
+                className={`text-xl border w-[35%] rounded-md ${selectedRange === "halfyear" ? "bg-[#f0a04b]" : "bg-gray-400"} text-white p-1`}
+                onClick={() => setSelectedRange("halfyear")}
+              >
+                Pół roku
+              </button>
+              <button
+                className={`text-xl border w-[35%] rounded-md ${selectedRange === "year" ? "bg-[#f0a04b]" : "bg-gray-400"} text-white p-1`}
+                onClick={() => setSelectedRange("year")}
+              >
+                Rok
+              </button>
+            </div>
+            <div>
+              <button
+                className="bg-[#f0a04b] text-2xl p-1 rounded-md border-2 text-white hover:border-[#ab733771]"
+                onClick={() => setIsModalOpen(true)}
+              >
+                Dodaj trening
+              </button>
+            </div>
           </div>
-          <div>
+          <div className="flex mt-2">
             <button
-              className="bg-[#f0a04b] text-2xl p-1 rounded-md border-2 text-white hover:border-[#ab733771]"
-              onClick={() => setIsModalOpen(true)}
+              className={` ${chartSet === true ? "bg-[#f0a04b]" : "bg-gray-300"} text-2xl p-1 rounded-md border-2 text-white hover:border-[#ab733771]`}
+              onClick={() => setChartSet(!chartSet)}
             >
-              Dodaj trening
+              <IoStatsChart />
             </button>
           </div>
         </div>
-        <div className="flex mt-10">
-          <BarChart
-            width={1000}
-            height={450}
-            series={[
-              { data: pData, label: "kcal", id: "kcal" },
-              { data: uData, label: "czas", id: "time" },
-            ]}
-            xAxis={[{ data: xLabels, scaleType: "band" }]}
-          />
+        <div
+          className={`${chartSet === false ? "flex h-[28vi] overflow-y-auto" : "flex"}`}
+        >
+          {chartSet === true ? (
+            <div className="flex ml-[-100px]">
+              <BarChart
+                width={1000}
+                height={450}
+                series={[
+                  { data: kcalData, label: "kcal", id: "kcal" },
+                  { data: timeData, label: "czas", id: "time" },
+                ]}
+                xAxis={[{ data: xLabels, scaleType: "band" }]}
+              />
+            </div>
+          ) : (
+            <div className="flex flex-col w-[100%] h-auto">
+              {trainingFilteredArr &&
+                trainingFilteredArr.map((trainig, index) => (
+                  <CardioTrainigBox
+                    key={index}
+                    trainigId={trainig.id}
+                    date={trainig.timestamp}
+                    kcal={trainig.kcal}
+                    time={trainig.time}
+                  />
+                ))}
+            </div>
+          )}
         </div>
+
         <div>
-          <p className="text-2xl">Łącznie spalone zostało: kcal</p>
+          <p className="text-2xl mt-2 text-green-800 font-bold">
+            Łącznie spalone zostało: {sumKcal} kcal
+          </p>
         </div>
 
         {loading && (
